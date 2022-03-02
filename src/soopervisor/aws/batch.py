@@ -141,7 +141,7 @@ def submit_dag(
 
             metadata = out['metadata']
 
-            if 'github_number' in metadata:
+            if metadata['github_number']:
                 ploomber_task += ploomber_task + [
                     '--github-number',
                     metadata['github_number'],
