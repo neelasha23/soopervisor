@@ -122,7 +122,8 @@ def submit_dag(
 
     cmdr.info('Submitting jobs...')
 
-    params = json.loads(Path('.ploomber-cloud').read_text())
+    # docker.build moves to the env folder
+    params = json.loads(Path('../.ploomber-cloud').read_text())
 
     out = pkg.runs_update(params['runid'], tasks)
 
