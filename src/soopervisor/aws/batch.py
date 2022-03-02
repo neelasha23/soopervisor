@@ -1,6 +1,7 @@
 """
 Running pipelines on AWS Batch
 """
+import json
 from pathlib import Path
 
 from ploomber.io._commander import Commander, CommanderStop
@@ -121,7 +122,9 @@ def submit_dag(
 
     cmdr.info('Submitting jobs...')
 
-    out = pkg.runs_update(tasks)
+    params = json.loads(Path('.ploomber-cloud').read_text())
+
+    out = pkg.runs_update(params['runid'], tasks)
 
     for name, upstream in tasks.items():
 
