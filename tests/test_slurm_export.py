@@ -171,9 +171,12 @@ def test_slurm_export_sample_project_incremental(monkeypatch,
         mock.stdout = value
         return mock
 
-    run_mock = Mock(side_effect=[factory(b'0'), factory(b'1'), factory(b'2')])
+    run_mock = Mock()
+    run_mock.run = Mock(
+        side_effect=[factory(
+            b'0'), factory(b'1'), factory(b'2')])
     monkeypatch.setattr(commons, 'load_tasks', load_tasks_mock)
-    monkeypatch.setattr(subprocess, 'run', run_mock)
+    monkeypatch.setattr(export, 'subprocess', run_mock)
 
     exporter = SlurmExporter.new(path_to_config='soopervisor.yaml',
                                  env_name='serve')
