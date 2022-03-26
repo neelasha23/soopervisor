@@ -50,7 +50,7 @@ def _submit_dag(
     container_properties,
     region_name,
     cmdr,
-    call_api,
+    is_cloud,
 ):
     client = boto3.client('batch', region_name=region_name)
     container_properties['image'] = remote_name
@@ -68,11 +68,14 @@ def _submit_dag(
     # docker.build moves to the env folder
     params = json.loads(Path('../.ploomber-cloud').read_text())
 
-    out = api.runs_update(params['runid'], tasks)
+    if is_cloud:
+        out = api.runs_update(params['runid'], tasks)
+    else:
+        out = None
 
     for name, upstream in tasks.items():
 
-        if out:
+        if is_cloud:
             ploomber_task = [
                 'python',
                 '-m',
@@ -98,16 +101,17 @@ def _submit_dag(
 
         cmdr.print(f'Submitted task {name!r}...')
 
-    api.runs_register_ids(params['runid'], job_ids)
+    if is_cloud:
+        api.runs_register_ids(params['runid'], job_ids)
 
 
-submit_dag_no_api = partial(_submit_dag, call_api=False)
-submit_dag_api = partial(_submit_dag, call_api=True)
+submit_dag_to_cloud = partial(_submit_dag, is_cloud=False)
+submit_dag_aws = partial(_submit_dag, is_cloud=True)
 
 
 class AWSBatchExporter(abc.AbstractExporter):
     CONFIG_CLASS = AWSBatchConfig
-    SUBMIT_DAG = submit_dag_no_api
+    SUBMIT_DAG = submit_dag_to_cloud
 
     @staticmethod
     def _validate(cfg, dag, env_name):
@@ -167,4 +171,4 @@ class AWSBatchExporter(abc.AbstractExporter):
 
 class CloudExporter(AWSBatchExporter):
     CONFIG_CLASS = CloudConfig
-    SUBMIT_DAG = submit_dag_api
+    SUBMIT_DAG = submit_dag_aws
