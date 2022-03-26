@@ -3,7 +3,6 @@ Running pipelines on AWS Batch
 """
 import json
 from pathlib import Path
-from functools import partial
 
 from ploomber.io._commander import Commander, CommanderStop
 from ploomber.util.util import requires
