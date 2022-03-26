@@ -104,13 +104,12 @@ def _submit_dag(
         api.runs_register_ids(params['runid'], job_ids)
 
 
-submit_dag_to_cloud = partial(_submit_dag, is_cloud=False)
-submit_dag_aws = partial(_submit_dag, is_cloud=True)
-
-
 class AWSBatchExporter(abc.AbstractExporter):
     CONFIG_CLASS = AWSBatchConfig
-    SUBMIT_DAG = submit_dag_to_cloud
+
+    @classmethod
+    def _submit_dag(cls, *args, **kwargs):
+        return _submit_dag(*args, **kwargs, is_cloud=False)
 
     @staticmethod
     def _validate(cfg, dag, env_name):
@@ -156,18 +155,22 @@ class AWSBatchExporter(abc.AbstractExporter):
 
             cmdr.info('Submitting jobs to AWS Batch')
 
-            cls.SUBMIT_DAG(tasks=tasks,
-                           args=cli_args,
-                           job_def=pkg_name,
-                           remote_name=remote_name,
-                           job_queue=cfg.job_queue,
-                           container_properties=cfg.container_properties,
-                           region_name=cfg.region_name,
-                           cmdr=cmdr)
+            cls._submit_dag(tasks=tasks,
+                            args=cli_args,
+                            job_def=pkg_name,
+                            remote_name=remote_name,
+                            job_queue=cfg.job_queue,
+                            container_properties=cfg.container_properties,
+                            region_name=cfg.region_name,
+                            cmdr=cmdr)
 
             cmdr.success('Done. Submitted to AWS Batch')
 
 
+# TODO: add tests
 class CloudExporter(AWSBatchExporter):
     CONFIG_CLASS = CloudConfig
-    SUBMIT_DAG = submit_dag_aws
+
+    @classmethod
+    def _submit_dag(cls, *args, **kwargs):
+        return _submit_dag(*args, **kwargs, is_cloud=True)
