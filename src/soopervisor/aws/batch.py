@@ -41,25 +41,22 @@ except ModuleNotFoundError:
 # add a way to skip tests when submitting
 
 
-def _transform_task_resources(mapping):
-    resources = []
+def _transform_task_resources(resources):
+    resources_out = []
 
-    vcpus = mapping.get('vcpus')
+    if resources.vcpus:
+        resources_out.append({'value': str(resources.vcpus), 'type': 'VCPU'})
 
-    if vcpus:
-        resources.append({'value': str(vcpus), 'type': 'VCPU'})
+    if resources.memory:
+        resources_out.append({
+            'value': str(resources.memory),
+            'type': 'MEMORY'
+        })
 
-    memory = mapping.get('memory')
+    if resources.gpu:
+        resources_out.append({'value': str(resources.gpu), 'type': 'GPU'})
 
-    if memory:
-        resources.append({'value': str(memory), 'type': 'MEMORY'})
-
-    gpu = mapping.get('gpu')
-
-    if gpu:
-        resources.append({'value': str(gpu), 'type': 'GPU'})
-
-    return resources
+    return resources_out
 
 
 def _process_task_resources(task_resources, tasks):
