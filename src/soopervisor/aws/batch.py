@@ -7,7 +7,6 @@ import json
 from pathlib import Path
 
 from ploomber.io._commander import Commander, CommanderStop
-from ploomber.io import pretty_print
 from ploomber.util.util import requires
 from ploomber.cloud import api
 
